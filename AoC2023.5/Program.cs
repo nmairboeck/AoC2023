@@ -1,4 +1,6 @@
-﻿var lines = await File.ReadAllLinesAsync("Input.txt");
+﻿using System.Diagnostics;
+
+var lines = await File.ReadAllLinesAsync("Input.txt");
 
 List<long> seeds = [];
 var seedToSoil = new List<(long destStart, long srcStart, long range)>();
@@ -71,6 +73,9 @@ for (var i = 0; i < lines.Length; i++)
     }
 }
 
+var sw = new Stopwatch();
+sw.Start();
+
 var minLocation = long.MaxValue;
 foreach (var seed in seeds)
 {
@@ -118,4 +123,82 @@ foreach (var seed in seeds)
     }
 }
 
-Console.WriteLine($"The minimum location is {minLocation}");
+sw.Stop();
+
+Console.WriteLine($"The minimum location is {minLocation}. Took : {sw.Elapsed}.");
+
+
+List<(int number, long start, long count)> seedsPart2 = [];
+for (var i = 0; i < seeds.Count; i += 2)
+{
+    seedsPart2.Add((i / 2, seeds[i], seeds[i + 1]));
+}
+
+sw.Reset();
+sw.Start();
+
+var results = new long[seedsPart2.Count];
+
+Parallel.ForEach(seedsPart2, (item) =>
+{
+    var minimum = long.MaxValue;
+    for (long i = 0; i < item.count; i++)
+    {
+        var result = MapSeed(item.start + i);
+        if (result < minimum)
+        {
+            minimum = result;
+        }
+    }
+
+    results[item.number] = minimum;
+});
+
+var part2Minimum = results.Min();
+
+sw.Stop();
+
+Console.WriteLine($"The minimum for part 2 is {part2Minimum}. Took {sw.Elapsed}");
+
+long MapSeed(long seed)
+{
+    var mapped = seed;
+
+    var map = seedToSoil.FirstOrDefault(x => x.srcStart <= mapped && mapped < x.srcStart + x.range);
+    if (map != default)
+    {
+        mapped = mapped - map.srcStart + map.destStart;
+    }
+    map = soilToFertilizer.FirstOrDefault(x => x.srcStart <= mapped && mapped < x.srcStart + x.range);
+    if (map != default)
+    {
+        mapped = mapped - map.srcStart + map.destStart;
+    }
+    map = fertilizerToWater.FirstOrDefault(x => x.srcStart <= mapped && mapped < x.srcStart + x.range);
+    if (map != default)
+    {
+        mapped = mapped - map.srcStart + map.destStart;
+    }
+    map = waterToLight.FirstOrDefault(x => x.srcStart <= mapped && mapped < x.srcStart + x.range);
+    if (map != default)
+    {
+        mapped = mapped - map.srcStart + map.destStart;
+    }
+    map = lightToTemperator.FirstOrDefault(x => x.srcStart <= mapped && mapped < x.srcStart + x.range);
+    if (map != default)
+    {
+        mapped = mapped - map.srcStart + map.destStart;
+    }
+    map = tempeatorToHumidity.FirstOrDefault(x => x.srcStart <= mapped && mapped < x.srcStart + x.range);
+    if (map != default)
+    {
+        mapped = mapped - map.srcStart + map.destStart;
+    }
+    map = humidityToLocation.FirstOrDefault(x => x.srcStart <= mapped && mapped < x.srcStart + x.range);
+    if (map != default)
+    {
+        mapped = mapped - map.srcStart + map.destStart;
+    }
+
+    return mapped;
+}
