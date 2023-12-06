@@ -11,18 +11,26 @@ var distances = lines[1]["Distance: ".Length..].Split(' ', StringSplitOptions.Re
 var winningProducts = 1;
 for (var i = 0; i < times.Length; i++)
 {
-    var winningcount = 0;
-
+    var firstWinner = 0;
+    var lastWinner = 0;
     for (var j = 0; j < times[i]; j++)
     {
-        var speed = j;
-        var distanceTraveled = (times[i] - j) * speed;
-        if (distanceTraveled > distances[i])
+        if ((times[i] - j) * j > distances[i])
         {
-            winningcount++;
+            firstWinner = j;
+            break;
         }
     }
-    winningProducts *= winningcount;
+    for (var j = times[i] - 1; j >= 0; j--)
+    {
+        if ((times[i] - j) * j > distances[i])
+        {
+            lastWinner = j;
+            break;
+        }
+    }
+
+    winningProducts *= lastWinner - firstWinner + 1;
 }
 
 sw.Stop();
@@ -35,15 +43,27 @@ sw.Start();
 var part2Time = int.Parse(lines[0]["Time:".Length..].Replace(" ", ""));
 var part2Distance = long.Parse(lines[1]["Distance: ".Length..].Replace(" ", ""));
 
-var winningCount2 = 0;
+
+var firstWinner2 = 0L;
+var lastWinner2 = 0L;
 
 for (long j = 0; j < part2Time; j++)
 {
     if ((part2Time - j) * j > part2Distance)
     {
-        winningCount2++;
+        firstWinner2 = j;
+        break;
     }
 }
+for (long j = part2Time - 1; j >= 0; j--)
+{
+    if ((part2Time - j) * j > part2Distance)
+    {
+        lastWinner2 = j;
+        break;
+    }
+}
+var winningCount2 = lastWinner2 - firstWinner2 + 1;
 
 sw.Stop();
 
